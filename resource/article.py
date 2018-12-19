@@ -5,13 +5,12 @@ class Article(Resource):
     
     def get(self, item_name, id):
         result = ItemModel.find_by_item(item_name)
-        print(result[0])
-        print(result[0].__dict__)
         if id <= len(result):
-            result = [x.__dict__ for x in result if x.id == id][0]       
+            result = result[id - 1].__dict__
             keys = ['title', 'item', 'source', 'date', 'content']
             result = {key : result[key]  for key in keys}
+            print(result)
             return {'content' :result} 
-        
+        return {"message" : "That item's article do not enough, please cut down id number"} 
 
 
