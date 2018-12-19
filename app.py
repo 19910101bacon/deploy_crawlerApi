@@ -1,3 +1,5 @@
+import os 
+
 from flask import Flask
 from flask_restful import Api
 from flask_jwt import JWT
@@ -9,17 +11,13 @@ from resource.article import Article
 from security import authenciate, identity
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///data.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///data.db')
 app.config['SQLALCHEMY_DATABASE_URL'] = False
 app.config['PROPAGATE_EXCEPTIONS'] = True
 app.config['JWT_AUTH_URL_RULE'] = '/login'
 app.config['JWT_AUTH_USERNAME_KEY'] = 'account'
 app.secret_key = 'secretkey'
 api = Api(app)
-
-@app.before_first_request
-def create_tables():
-    db.create_all()
 
 jwt = JWT(app, authenciate, identity)
 
@@ -34,4 +32,10 @@ api.add_resource(Article, '/item/<string:item_name>/<int:id>')
 if __name__ == '__main__':
     from db import db
     db.init_app(app)
+
+    if app.config['DEBUG']:
+        @app.before_first_request
+        def create_tables():
+            db.create_all()
+    
     app.run(port=5000, debug = True)
